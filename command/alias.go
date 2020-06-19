@@ -2,7 +2,6 @@ package command
 
 import (
 	"fmt"
-	"os/exec"
 	"sort"
 	"strings"
 
@@ -17,6 +16,8 @@ func init() {
 	aliasCmd.AddCommand(aliasSetCmd)
 	aliasCmd.AddCommand(aliasListCmd)
 	aliasCmd.AddCommand(aliasDeleteCmd)
+
+	aliasSetCmd.Flags().BoolP("shell", "s", false, "Whether the alias should be passed to a shell")
 }
 
 var aliasCmd = &cobra.Command{
@@ -45,10 +46,6 @@ that follow the invocation of an alias will be inserted appropriately.`,
 	`),
 	Args: cobra.MinimumNArgs(2),
 	RunE: aliasSet,
-
-	// NB: this allows a user to eschew quotes when specifiying an alias expansion. We'll have to
-	// revisit it if we ever want to add flags to alias set but we have no current plans for that.
-	DisableFlagParsing: true,
 }
 
 func aliasSet(cmd *cobra.Command, args []string) error {
@@ -70,16 +67,21 @@ func aliasSet(cmd *cobra.Command, args []string) error {
 	out := colorableOut(cmd)
 	fmt.Fprintf(out, "- Adding alias for %s: %s\n", utils.Bold(alias), utils.Bold(expansionStr))
 
+	shell, err := cmd.Flags().GetBool("shell")
+	if err != nil {
+		return err
+	}
+	if shell && !strings.HasPrefix(expansionStr, "!") {
+		expansionStr = "!" + expansionStr
+	}
+	isExternal := strings.HasPrefix(expansionStr, "!")
+
 	if validCommand([]string{alias}) {
 		return fmt.Errorf("could not create alias: %q is already a gh command", alias)
 	}
 
-	if !validCommand(expansion) {
-		_, err = exec.LookPath(expansion[0])
-		stderr := colorableErr(cmd)
-		if err != nil {
-			fmt.Fprintf(stderr, "%s %s does not correspond to a gh subcommand nor a command on your PATH\n", utils.Yellow("!"), utils.Bold(expansionStr))
-		}
+	if !isExternal && !validCommand(expansion) {
+		return fmt.Errorf("%s does not correspond to a gh subcommand", alias)
 	}
 
 	successMsg := fmt.Sprintf("%s Added alias.", utils.Green("✓"))
