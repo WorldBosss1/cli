@@ -81,7 +81,7 @@ func aliasSet(cmd *cobra.Command, args []string) error {
 	}
 
 	if !isExternal && !validCommand(expansion) {
-		return fmt.Errorf("%s does not correspond to a gh subcommand", alias)
+		return fmt.Errorf("could not create alias: %s does not correspond to a gh command", expansionStr)
 	}
 
 	successMsg := fmt.Sprintf("%s Added alias.", utils.Green("✓"))

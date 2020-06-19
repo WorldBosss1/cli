@@ -65,7 +65,7 @@ aliases:
 	hostsBuf := bytes.Buffer{}
 	defer config.StubWriteConfig(&mainBuf, &hostsBuf)()
 
-	output, err := RunCommand("alias set co pr checkout -Rcool/repo")
+	output, err := RunCommand("alias set co 'pr checkout -Rcool/repo'")
 
 	if err != nil {
 		t.Fatalf("unexpected error: %s", err)
@@ -81,7 +81,7 @@ func TestAliasSet_space_args(t *testing.T) {
 	hostsBuf := bytes.Buffer{}
 	defer config.StubWriteConfig(&mainBuf, &hostsBuf)()
 
-	output, err := RunCommand(`alias set il issue list -l 'cool story'`)
+	output, err := RunCommand(`alias set il 'issue list -l "cool story"'`)
 
 	if err != nil {
 		t.Fatalf("unexpected error: %s", err)
@@ -105,15 +105,11 @@ func TestAliasSet_arg_processing(t *testing.T) {
 
 		{`alias set iz 'issue list'`, "- Adding alias for iz: issue list", "iz: issue list"},
 
-		{`alias set iy issue list --author=\$1 --label=\$2`,
-			`- Adding alias for iy: issue list --author=\$1 --label=\$2`,
-			`iy: issue list --author=\$1 --label=\$2`},
-
 		{`alias set ii 'issue list --author="$1" --label="$2"'`,
 			`- Adding alias for ii: issue list --author=\$1 --label=\$2`,
 			`ii: issue list --author=\$1 --label=\$2`},
 
-		{`alias set ix issue list --author='$1' --label='$2'`,
+		{`alias set ix "issue list --author='\$1' --label='\$2'"`,
 			`- Adding alias for ix: issue list --author=\$1 --label=\$2`,
 			`ix: issue list --author=\$1 --label=\$2`},
 	}
