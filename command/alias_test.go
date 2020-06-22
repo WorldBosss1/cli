@@ -315,3 +315,20 @@ aliases:
 
 	eq(t, mainBuf.String(), expected)
 }
+
+// TODO documentation
+// TODO unshlex test
+// TODO ExpandAlias test
+
+func TestShellAlias_flag(t *testing.T) {
+	initBlankContext("", "OWNER/REPO", "trunk")
+
+	mainBuf := bytes.Buffer{}
+	hostsBuf := bytes.Buffer{}
+	defer config.StubWriteConfig(&mainBuf, &hostsBuf)()
+	// TODO
+}
+
+func TestShellAlias_bang(t *testing.T) {
+	// TODO
+}
